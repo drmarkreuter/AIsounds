@@ -1,4 +1,18 @@
 body {
     background-color: rgb(10, 10, 10);
     color: rgb(245,255,255);
-    }
+}
+    .wavplot {
+  border-radius: 25px;}
+  
+    .spec {
+  border-radius: 25px;
+  width: 30%;
+     transition: width 2s;
+   }
+  
+  .spec:hover {
+  width: 80%;
+  }
+  
+
