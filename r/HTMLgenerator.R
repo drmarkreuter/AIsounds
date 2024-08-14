@@ -33,7 +33,7 @@ wavs
 mp3tag <- '<audio controls style="vertical-align: middle;"><source src="edit/'
 mp3tagclose <- '" type="audio/mpeg">Your browser does not support the audio element. </audio>'
 
-##generate wv plots png files
+##generate wav plots png files
 
 for (i in 1:length(wavs)){
   waveObject <- tuneR::readWave(paste0(getwd(),"/edit/",wavs[i]))
@@ -50,6 +50,40 @@ for (i in 1:length(wavs)){
   dev.off()
 }
 
+##plotting spectrograms
+for (i in 1:length(wavs)){
+  waveObject <- tuneR::readWave(paste0(getwd(),"/edit/",wavs[i]))
+  fname <- unlist(strsplit(wavs[i],"\\."))[1]
+  print(fname)
+  
+  #plot left
+  waveObjectLeft <- tuneR::channel(waveObject,which="left")
+  WspecobjLeft <- periodogram(waveObjectLeft, width = 4096)
+  
+  #plot right
+  waveObjectRight <- tuneR::channel(waveObject,which="right")
+  WspecobjRight <- periodogram(waveObjectRight, width = 4096)
+  
+  png(file = paste0(getwd(),"/spectrograms/",fname,"-spectrogram.png"),
+      width=600, height=300)
+  par(mfrow = c(1, 2))
+  par(bg="grey31")
+  
+  image(WspecobjLeft,
+        ylim=c(0, 12000),
+        log="z",
+        cex.main = 0.7,
+        main=paste0(fname,"-left"))
+  
+  image(WspecobjRight,
+        ylim=c(0, 12000),
+        log="z",cex.main = 0.7,
+        main=paste0(fname,"-right"))
+  
+  dev.off()
+  
+}
+
 #create a vector for HTML link to png files
 htmlPNGtag <- vector()
 
@@ -58,6 +92,16 @@ for (i in 1:length(wavs)){
   htmlPNGtag[i] <- paste0('<img class="wavplot" src="waveplots/',fname,'.png" alt="',fname,'">')
 }
 htmlPNGtag
+
+htmlPNGspectrogramTag <- vector()
+
+for (i in 1:length(wavs)){
+  fname <- unlist(strsplit(wavs[i],"\\."))[1]
+  htmlPNGspectrogramTag[i] <- paste0('<img class="spec" src="spectrograms/',fname,'-spectrogram.png" alt="',fname,'">')
+}
+htmlPNGspectrogramTag
+
+
 
 htmlPlayerTag <- vector()
 
@@ -70,6 +114,8 @@ for (i in 1:length(wavs)){
                              mp3tag,
                              wavs[i],
                              mp3tagclose,
+                             "<br>",
+                             htmlPNGspectrogramTag[i],
                              "<br><hr>")
 }
 htmlPlayerTag
@@ -93,34 +139,21 @@ style <- "body {
     color: rgb(245,255,255);
 }
     .wavplot {
-  border-radius: 25px};
+  border-radius: 25px;}
+  
+    .spec {
+  border-radius: 25px;
+  width: 30%;
+     transition: width 2s;
+   }
+  
+  .spec:hover {
+  width: 80%;
+  }
+  
 "
 
 write(style,"style.css")
 
-## tuneR prototyping
-# waveObject <- tuneR::readWave(paste0(getwd(),"/edit/",wavs[1]))
-# plot(waveObject)
-# tuneR::plot(waveObject,xunit = "samples")
-# tuneR::plot(waveObject,
-#             xunit = "time",
-#             col = sample(colours(),1),
-#             main = unlist(strsplit(wavs[1],"\\."))[1])
-# 
-# png(file = paste0(getwd(),"/waveplots/",unlist(strsplit(wavs[1],"\\."))[1],".png"),
-#     width=400, height=300)
-# #par(bg=NA) ##transparent background
-# par(bg="grey31")
-# tuneR::plot(waveObject,
-#             xunit = "time",
-#             col = sample(colours(),1),
-#             main = unlist(strsplit(wavs[1],"\\."))[1]
-#             )
-# dev.off()
 
 
-
-# plot(x, info = FALSE, xunit = c("time", "samples"),
-#      ylim = NULL, main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
-#      simplify = TRUE, nr = 2500, axes = TRUE, yaxt = par("yaxt"), las = 1,
-#      center = TRUE, ...)
